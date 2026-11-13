@@ -42,7 +42,7 @@ import app.sureureuk.core.PermState
 import app.sureureuk.core.Perms
 import app.sureureuk.update.Updates
 
-private class PermItem(val title: String, val desc: String, val done: Boolean, val onGrant: () -> Unit)
+private class PermItem(val icon: Int, val title: String, val desc: String, val done: Boolean, val onGrant: () -> Unit)
 
 /**
  * 처음 실행 권한 안내. 필수 3개를 먼저 보여 주고 나머지는 '선택'으로 나눈다.
@@ -54,31 +54,31 @@ fun PermissionsScreen(perms: PermState, onRefresh: () -> Unit, onDone: () -> Uni
     val notifLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { onRefresh() }
 
     val required = listOf(
-        PermItem("알림 표시", "남은 시간과 연장 버튼을 알림에 보여줘요", perms.notifications) {
+        PermItem(R.drawable.ic_bell, "알림 표시", "남은 시간과 연장 버튼을 알림에 보여줘요", perms.notifications) {
             if (Build.VERSION.SDK_INT >= 33) notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         },
-        PermItem("알림 접근", "재생 중인 앱을 찾아서 멈춰요. 알림 내용은 읽지 않아요", perms.listener) {
+        PermItem(R.drawable.ic_music, "알림 접근", "재생 중인 앱을 찾아서 멈춰요. 알림 내용은 읽지 않아요", perms.listener) {
             Perms.open(ctx, Perms.listenerIntents(ctx))
         },
-        PermItem("알람 및 리마인더", "휴대폰이 잠들어 있어도 정확한 시간에 끝내요", perms.exactAlarm) {
+        PermItem(R.drawable.ic_alarm, "알람 및 리마인더", "휴대폰이 잠들어 있어도 정확한 시간에 끝내요", perms.exactAlarm) {
             Perms.open(ctx, Perms.exactAlarmIntents(ctx))
         },
     )
     val optional = listOfNotNull(
-        PermItem("다른 앱 위에 표시", "영상 앱이 화면을 켜 둬도 끌 수 있고, 영상 위에 +10분 버튼을 띄워요", perms.overlay) {
+        PermItem(R.drawable.ic_layers, "다른 앱 위에 표시", "영상 앱이 화면을 켜 둬도 끌 수 있고, 영상 위에 +10분 버튼을 띄워요", perms.overlay) {
             Perms.open(ctx, Perms.overlayIntents(ctx))
         },
         if (BuildConfig.A11Y_LOCK) {
-            PermItem("접근성: 바로 잠그기", "끝나면 전원 버튼처럼 바로 꺼요. 화면 내용은 읽지 않아요", perms.accessibility) {
+            PermItem(R.drawable.ic_person, "접근성: 바로 잠그기", "끝나면 전원 버튼처럼 바로 꺼요. 화면 내용은 읽지 않아요", perms.accessibility) {
                 Perms.open(ctx, Perms.accessibilityIntents())
             }
         } else {
             null
         },
-        PermItem("배터리 최적화 제외", "밤새 타이머가 멈추지 않게 해요", perms.battery) {
+        PermItem(R.drawable.ic_battery, "배터리 최적화 제외", "밤새 타이머가 멈추지 않게 해요", perms.battery) {
             Perms.open(ctx, Perms.batteryIntents())
         },
-        PermItem("시스템 설정 변경", "화면이 10초 만에 꺼져요", perms.writeSettings) {
+        PermItem(R.drawable.ic_sun, "시스템 설정 변경", "화면이 10초 만에 꺼져요", perms.writeSettings) {
             Perms.open(ctx, Perms.writeSettingsIntents(ctx))
         },
     )
@@ -172,7 +172,7 @@ private fun PermRow(item: PermItem) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        StatusRing(item.done)
+        IconBadge(item.icon, tint = if (item.done) C.mint else C.accent, done = item.done)
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(item.title.keepAll(), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = C.text)
             Text(item.desc.keepAll(), fontSize = 13.sp, color = C.muted)
@@ -182,17 +182,5 @@ private fun PermRow(item: PermItem) {
         } else {
             SmallOutlineButton("허용하기", description = "${item.title} 허용하기", onClick = item.onGrant)
         }
-    }
-}
-
-/** 순서가 없으니 번호 대신 상태만: 빈 원 → 체크 */
-@Composable
-private fun StatusRing(done: Boolean) {
-    if (done) {
-        Box(Modifier.size(24.dp).clip(CircleShape).background(C.mint), contentAlignment = Alignment.Center) {
-            Icon(painterResource(R.drawable.ic_check), contentDescription = "허용됨", tint = C.bg, modifier = Modifier.size(14.dp))
-        }
-    } else {
-        Box(Modifier.size(24.dp).border(2.dp, C.line, CircleShape))
     }
 }

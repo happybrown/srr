@@ -210,6 +210,9 @@ class SleepTimerService : Service() {
         }
     }
 
+    private fun totalSec(): Int = (totalMinutes * 60).coerceAtLeast(1)
+    private fun elapsedSec(): Int = (totalSec() - ((endAt - System.currentTimeMillis()) / 1000).toInt()).coerceIn(0, totalSec())
+
     private fun fadeMs(): Long = if (prefs.fadeEnabled) prefs.fadeSeconds * 1000L else 0L
     private fun fadeStartAt(): Long = endAt - fadeMs()
 
@@ -217,8 +220,13 @@ class SleepTimerService : Service() {
         job?.cancel()
         job = scope.launch {
             setPhase(Phase.RUNNING)
-            val wait = fadeStartAt() - System.currentTimeMillis()
-            if (wait > 0) delay(wait)
+            // 30초마다 알림의 진행 막대를 갱신하며 기다린다 (기기가 잠들어 늦어지면 백업 알람이 깨운다)
+            while (true) {
+                val wait = fadeStartAt() - System.currentTimeMillis()
+                if (wait <= 0) break
+                delay(minOf(wait, 30_000L))
+                if (fadeStartAt() > System.currentTimeMillis()) publish()
+            }
             endSequence()
         }
     }
@@ -232,9 +240,10 @@ class SleepTimerService : Service() {
                 setPhase(Phase.FADING)
                 VerifyLog.i(TAG, "마지막 ${fadeLeft / 1000}초 · 재생: ${stopper.describe()}")
                 showFadeUi(endAt)
+                val fadeTotal = (fadeLeft / 1000).toInt().coerceAtLeast(1)
                 val ticker = scope.launch {
                     while (isActive) {
-                        overlay.update(((endAt - System.currentTimeMillis()) / 1000).coerceAtLeast(0).toInt())
+                        overlay.update(((endAt - System.currentTimeMillis()) / 1000).coerceAtLeast(0).toInt(), fadeTotal)
                         delay(1_000)
                     }
                 }
@@ -368,7 +377,7 @@ class SleepTimerService : Service() {
                         val until = System.currentTimeMillis() + 15_000
                         showFadeUi(until)
                         repeat(15) {
-                            overlay.update(15 - it)
+                            overlay.update(15 - it, 15)
                             delay(1_000)
                         }
                         hideFadeUi()
@@ -443,6 +452,7 @@ class SleepTimerService : Service() {
                 .setChronometerCountDown(true)
                 .setWhen(endAt)
                 .setShowWhen(true)
+                .setProgress(totalSec(), elapsedSec(), false)
                 .addAction(0, "+5분", svcPi(10, ACTION_EXTEND, 5))
                 .addAction(0, "+15분", svcPi(11, ACTION_EXTEND, 15))
                 .addAction(0, "끄기", svcPi(12, ACTION_CANCEL))

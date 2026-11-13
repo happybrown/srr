@@ -62,6 +62,12 @@ class MediaStopper(private val ctx: Context) {
         return if (playing.size == 1) first else "$first 외 ${playing.size - 1}개 앱"
     }
 
+    /** 지금 재생 중인 앱의 패키지 이름 (알림 접근 권한이 있을 때만) */
+    fun playingPackages(): List<String> =
+        sessions().filter { it.playbackState?.state == PlaybackState.STATE_PLAYING }.map { it.packageName }.distinct()
+
+    fun isMusicActive(): Boolean = am.isMusicActive
+
     fun isPlaying(): Boolean =
         am.isMusicActive || sessions().any { it.playbackState?.state == PlaybackState.STATE_PLAYING }
 

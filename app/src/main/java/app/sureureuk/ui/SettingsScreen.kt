@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -54,22 +55,28 @@ fun SettingsScreen(prefs: Prefs, perms: PermState, onBack: () -> Unit, onPerms: 
         Text("타이머가 끝나면 이 순서로 실행해요".keepAll(), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = C.muted)
 
         AppCard {
-            StepHeader("1") {
+            StepHeader(R.drawable.ic_volume) {
                 ToggleRow("소리 서서히 줄이기", "갑자기 소리가 끊겨 깨지 않도록", fade) { fade = it; prefs.fadeEnabled = it }
             }
             if (fade) {
-                Column(Modifier.padding(start = 40.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(Modifier.padding(start = 48.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("줄이는 시간", fontSize = 13.sp, color = C.muted)
                     Segmented(listOf("30초", "1분", "3분", "5분"), fadeIdx) {
                         fadeIdx = it
                         prefs.fadeSeconds = FADE_SECONDS[it]
+                    }
+                    // 고른 시간만큼 끝나기 전에 볼륨이 내려가는 모양
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painterResource(R.drawable.ic_volume_high), contentDescription = null, tint = C.muted, modifier = Modifier.size(16.dp))
+                        FadeCurve(FADE_SECONDS[fadeIdx], Modifier.weight(1f).height(44.dp).padding(horizontal = 8.dp))
+                        Icon(painterResource(R.drawable.ic_volume_off), contentDescription = null, tint = C.muted, modifier = Modifier.size(16.dp))
                     }
                 }
             }
         }
 
         AppCard {
-            StepHeader("2") {
+            StepHeader(R.drawable.ic_pause) {
                 ToggleRow("재생 중인 앱 멈추기", "유튜브·넷플릭스·음악 앱 등", stop) { stop = it; prefs.stopEnabled = it }
             }
             if (stop && !perms.listener) {
@@ -78,11 +85,11 @@ fun SettingsScreen(prefs: Prefs, perms: PermState, onBack: () -> Unit, onPerms: 
         }
 
         AppCard {
-            StepHeader("3") {
+            StepHeader(R.drawable.ic_phone_off) {
                 ToggleRow("화면 끄기", "지문·얼굴 인식은 그대로 돼요", screen) { screen = it; prefs.screenEnabled = it }
             }
             if (screen) {
-                Column(Modifier.padding(start = 40.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(Modifier.padding(start = 48.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (BuildConfig.A11Y_LOCK) {
                         ToggleRow(
                             "바로 잠그기",
@@ -136,9 +143,9 @@ fun SettingsScreen(prefs: Prefs, perms: PermState, onBack: () -> Unit, onPerms: 
 }
 
 @Composable
-private fun StepHeader(n: String, content: @Composable () -> Unit) {
+private fun StepHeader(icon: Int, content: @Composable () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        NumberBadge(n)
+        IconBadge(icon, size = 36.dp)
         Column(Modifier.padding(start = 12.dp)) { content() }
     }
 }

@@ -85,16 +85,34 @@ class ScreenshotTest {
 
     @Test fun setup_galaxy_bigFont() = shoot("setup_360x780_font130", "w360dp-h780dp-xxhdpi", 1.3f) { Home(allGranted) }
 
-    @Test fun setup_small() = shoot("setup_360x640", "w360dp-h640dp-xhdpi") { Home(allGranted) }
+    // 지원 기기: 갤럭시 S8 이후 (가장 작은 화면 = S8, 360x740dp)
+    @Test fun setup_s8() = shoot("setup_360x740_s8", "w360dp-h740dp-xxhdpi") { Home(allGranted) }
 
-    @Test fun setup_small_banner_bigFont() = shoot("setup_360x640_banner_font130", "w360dp-h640dp-xhdpi", 1.3f) { Home(noneGranted) }
+    @Test fun setup_s8_banner_bigFont() = shoot("setup_360x740_s8_banner_font130", "w360dp-h740dp-xxhdpi", 1.3f) { Home(noneGranted) }
 
-    @Test fun setup_pixel() = shoot("setup_412x915", "w412dp-h915dp-xxhdpi") { Home(allGranted) }
+    @Test fun setup_ultra() = shoot("setup_412x915_ultra", "w412dp-h915dp-xxhdpi") { Home(allGranted) }
 
-    @Test fun setup_small_bigFont_120() {
+    @Test fun setup_s24() = shoot("setup_384x832_s24", "w384dp-h832dp-xxhdpi") { Home(allGranted) }
+
+    private fun withMinutes(m: Int, block: () -> Unit) {
+        val ctx = RuntimeEnvironment.getApplication()
+        Prefs(ctx).lastMinutes = m
+        try { block() } finally { Prefs(ctx).lastMinutes = 30 }
+    }
+
+    @Test fun setup_90min() = withMinutes(90) { shoot("setup_360x780_90min", "w360dp-h780dp-xxhdpi") { Home(allGranted) } }
+
+    @Test fun setup_7h45() = withMinutes(465) { shoot("setup_360x780_7h45", "w360dp-h780dp-xxhdpi") { Home(allGranted) } }
+
+    @Test fun running_long() {
+        TimerState.flow.value = TimerUi(Phase.RUNNING, System.currentTimeMillis() + (3 * 3600 + 12 * 60 + 9) * 1000L, 240)
+        shoot("running_360x780_long", "w360dp-h780dp-xxhdpi") { Home(allGranted) }
+    }
+
+    @Test fun setup_s8_bigFont_120() {
         val ctx = org.robolectric.RuntimeEnvironment.getApplication()
         Prefs(ctx).lastMinutes = 120
-        shoot("setup_360x640_font130_120min", "w360dp-h640dp-xhdpi", 1.3f) { Home(allGranted) }
+        shoot("setup_360x740_s8_font130_120min", "w360dp-h740dp-xxhdpi", 1.3f) { Home(allGranted) }
         Prefs(ctx).lastMinutes = 30
     }
 
@@ -105,9 +123,9 @@ class ScreenshotTest {
         shoot("running_360x780", "w360dp-h780dp-xxhdpi") { Home(allGranted) }
     }
 
-    @Test fun running_small_bigFont_hours() {
+    @Test fun running_s8_bigFont_hours() {
         TimerState.flow.value = TimerUi(Phase.FADING, System.currentTimeMillis() + (83 * 60 + 5) * 1000L, 90)
-        shoot("running_360x640_font130", "w360dp-h640dp-xhdpi", 1.3f) { Home(allGranted) }
+        shoot("running_360x740_s8_font130", "w360dp-h740dp-xxhdpi", 1.3f) { Home(allGranted) }
     }
 
     // ---- 설정 · 권한

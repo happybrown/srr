@@ -26,7 +26,7 @@ android {
 
     defaultConfig {
         applicationId = "app.sureureuk"
-        minSdk = 26
+        minSdk = 28 // 갤럭시 S8의 마지막 업데이트가 Android 9 (API 28)
         targetSdk = 36
         versionCode = appVersionCode
         versionName = appVersion

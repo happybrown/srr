@@ -38,7 +38,7 @@ Play 프로텍트 차단을 피하려고 다음은 넣지 않습니다.
 ./gradlew recordRoborazziGithubDebug   # 화면 렌더링 → app/screenshots/
 ```
 
-화면 테스트(`app/src/test/.../ScreenshotTest.kt`)는 Robolectric + Roborazzi로 기기 없이 화면을 PNG로 그립니다. 360×640, 360×780, 412×915 크기와 글꼴 1.3배에서 겹침이나 잘림이 없는지 확인하는 데 씁니다. README 이미지(`docs/images/`)도 여기서 나옵니다.
+화면 테스트(`app/src/test/.../ScreenshotTest.kt`)는 Robolectric + Roborazzi로 기기 없이 화면을 PNG로 그립니다. 지원 기종은 **갤럭시 S8 이후**(minSdk 28)입니다. 그래서 S8(360×740), S22/S23(360×780), S24/S25(384×832), S20/S21 Ultra(412×915) 크기와 글꼴 1.3배에서 겹침이나 잘림이 없는지 확인합니다. 상태 표시줄 24dp와 내비게이션 바 48dp 자리는 비워 두고 그립니다. README 이미지(`docs/images/`)도 여기서 나옵니다.
 
 ## 배포
 

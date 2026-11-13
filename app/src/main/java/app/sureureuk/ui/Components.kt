@@ -97,7 +97,16 @@ fun AppCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -
 }
 
 @Composable
-fun PrimaryButton(text: String, modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) {
+private fun ButtonContent(text: String, icon: Int?, fontSize: Int) {
+    if (icon != null) {
+        Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(8.dp))
+    }
+    Text(text, fontSize = fontSize.sp, fontWeight = if (fontSize >= 17) FontWeight.Bold else FontWeight.SemiBold)
+}
+
+@Composable
+fun PrimaryButton(text: String, modifier: Modifier = Modifier, enabled: Boolean = true, icon: Int? = null, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         enabled = enabled,
@@ -108,12 +117,19 @@ fun PrimaryButton(text: String, modifier: Modifier = Modifier, enabled: Boolean 
             disabledContainerColor = C.surface2, disabledContentColor = C.muted,
         ),
     ) {
-        Text(text, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        ButtonContent(text, icon, 18)
     }
 }
 
 @Composable
-fun SecondaryButton(text: String, modifier: Modifier = Modifier, enabled: Boolean = true, height: Dp = 56.dp, onClick: () -> Unit) {
+fun SecondaryButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    height: Dp = 56.dp,
+    icon: Int? = null,
+    onClick: () -> Unit,
+) {
     Button(
         onClick = onClick,
         enabled = enabled,
@@ -124,12 +140,12 @@ fun SecondaryButton(text: String, modifier: Modifier = Modifier, enabled: Boolea
             disabledContainerColor = C.surface, disabledContentColor = C.muted,
         ),
     ) {
-        Text(text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+        ButtonContent(text, icon, 15)
     }
 }
 
 @Composable
-fun GhostButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun GhostButton(text: String, modifier: Modifier = Modifier, icon: Int? = null, onClick: () -> Unit) {
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.height(52.dp),
@@ -137,7 +153,7 @@ fun GhostButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit
         border = BorderStroke(1.dp, C.line),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = C.text),
     ) {
-        Text(text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+        ButtonContent(text, icon, 15)
     }
 }
 
