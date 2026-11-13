@@ -210,8 +210,11 @@ class SleepTimerService : Service() {
         }
     }
 
+    /** 남은 시간 막대가 1%씩 줄어드는 간격 (30분 타이머 = 18초, 최소 2초, 최대 30초) */
+    private fun progressIntervalMs(): Long = (totalSec() * 10L).coerceIn(2_000L, 30_000L)
+
     private fun totalSec(): Int = (totalMinutes * 60).coerceAtLeast(1)
-    private fun elapsedSec(): Int = (totalSec() - ((endAt - System.currentTimeMillis()) / 1000).toInt()).coerceIn(0, totalSec())
+    private fun remainingSec(): Int = ((endAt - System.currentTimeMillis()) / 1000).toInt().coerceIn(0, totalSec())
 
     private fun fadeMs(): Long = if (prefs.fadeEnabled) prefs.fadeSeconds * 1000L else 0L
     private fun fadeStartAt(): Long = endAt - fadeMs()
@@ -220,12 +223,12 @@ class SleepTimerService : Service() {
         job?.cancel()
         job = scope.launch {
             setPhase(Phase.RUNNING)
-            // 30초마다 알림의 진행 막대를 갱신하며 기다린다 (기기가 잠들어 늦어지면 백업 알람이 깨운다)
+            // 알림의 진행 막대를 갱신하며 기다린다 (기기가 잠들어 늦어지면 백업 알람이 깨운다)
             while (true) {
                 val wait = fadeStartAt() - System.currentTimeMillis()
                 if (wait <= 0) break
-                delay(minOf(wait, 30_000L))
-                if (fadeStartAt() > System.currentTimeMillis()) publish()
+                delay(minOf(wait, progressIntervalMs()))
+                if (fadeStartAt() > System.currentTimeMillis()) notifyTimer()
             }
             endSequence()
         }
@@ -242,8 +245,10 @@ class SleepTimerService : Service() {
                 showFadeUi(endAt)
                 val fadeTotal = (fadeLeft / 1000).toInt().coerceAtLeast(1)
                 val ticker = scope.launch {
+                    var n = 0
                     while (isActive) {
                         overlay.update(((endAt - System.currentTimeMillis()) / 1000).coerceAtLeast(0).toInt(), fadeTotal)
+                        if (n++ % 2 == 1) notifyTimer() // 소리 줄이는 동안에도 진행 막대를 2초마다 갱신
                         delay(1_000)
                     }
                 }
@@ -402,10 +407,16 @@ class SleepTimerService : Service() {
     @SuppressLint("MissingPermission")
     private fun publish() {
         TimerState.flow.value = TimerUi(phase, endAt, totalMinutes, testLabel)
+        notifyTimer()
+        SleepTileService.refresh(this)
+    }
+
+    /** 실행 중 알림을 지금 상태(남은 시간, 진행 막대)로 다시 그린다 */
+    @SuppressLint("MissingPermission")
+    private fun notifyTimer() {
         if (phase != Phase.IDLE && Notifications.canPost(this)) {
             NotificationManagerCompat.from(this).notify(Notifications.ID_TIMER, buildTimerNotification())
         }
-        SleepTileService.refresh(this)
     }
 
     // 병합된 매니페스트에는 foregroundServiceType="specialUse"가 선언돼 있다.
@@ -452,7 +463,7 @@ class SleepTimerService : Service() {
                 .setChronometerCountDown(true)
                 .setWhen(endAt)
                 .setShowWhen(true)
-                .setProgress(totalSec(), elapsedSec(), false)
+                .setProgress(totalSec(), remainingSec(), false) // 남은 시간: 가득 찬 막대가 줄어든다
                 .addAction(0, "+5분", svcPi(10, ACTION_EXTEND, 5))
                 .addAction(0, "+15분", svcPi(11, ACTION_EXTEND, 15))
                 .addAction(0, "끄기", svcPi(12, ACTION_CANCEL))
