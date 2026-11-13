@@ -264,7 +264,7 @@ class SleepTimerService : Service() {
                 VerifyLog.i(TAG, "15분마다 재생 여부를 보고 볼륨을 복원할게요")
             }
 
-            if (prefs.screenEnabled) screen.turnOff(prefs.screenMode)
+            if (prefs.screenEnabled) screen.turnOff()
             VerifyLog.i(TAG, "■ 마무리 완료")
         } finally {
             stopper.releaseFocus()
@@ -359,7 +359,7 @@ class SleepTimerService : Service() {
                         delay(3_000)
                         fader.restoreNow("테스트 끝")
                     }
-                    TestKind.SCREEN -> screen.turnOff(prefs.screenMode)
+                    TestKind.SCREEN -> screen.turnOff()
                     TestKind.OVERLAY -> {
                         val until = System.currentTimeMillis() + 15_000
                         showFadeUi(until)

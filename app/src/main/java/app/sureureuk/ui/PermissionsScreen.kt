@@ -59,9 +59,6 @@ fun PermissionsScreen(perms: PermState, onRefresh: () -> Unit, onDone: () -> Uni
         PermItem("시스템 설정 변경", "선택", "화면을 더 빨리 끌 수 있어요", perms.writeSettings) {
             Perms.open(ctx, Perms.writeSettingsIntents(ctx))
         },
-        PermItem("기기 관리자", "선택", "'즉시 잠금' 방식을 쓸 때만 필요해요", perms.admin) {
-            Perms.open(ctx, Perms.adminIntents(ctx))
-        },
     )
     val done = items.count { it.done }
 

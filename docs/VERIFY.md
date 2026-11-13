@@ -4,7 +4,7 @@
 
 ## 1. 설치
 
-가장 쉬운 방법은 [GitHub Releases](https://github.com/happybrown/srr/releases)에서 `sureureuk-x.y.z-github.apk`를 받아 설치하는 것입니다. 직접 빌드하려면:
+가장 쉬운 방법은 [GitHub Releases](https://github.com/happybrown/srr/releases)에서 `.apk` 파일을 받아 설치하는 것입니다. 직접 빌드하려면:
 
 ```bash
 ./gradlew assembleGithubDebug
@@ -17,7 +17,7 @@ adb install -r app/build/outputs/apk/github/debug/app-github-debug.apk
 
 ## 2. 권한 설정
 
-앱을 처음 열면 권한 안내 화면이 나옵니다. 정확한 검증을 위해 **7개를 모두 허용**한 뒤 시작하세요.
+앱을 처음 열면 권한 안내 화면이 나옵니다. 정확한 검증을 위해 **6개를 모두 허용**한 뒤 시작하세요.
 
 | 권한 | 구분 | 확인하려는 것 |
 |---|---|---|
@@ -27,7 +27,6 @@ adb install -r app/build/outputs/apk/github/debug/app-github-debug.apk
 | 배터리 최적화 제외 | 권장 | 밤새 서비스가 종료되지 않는지 |
 | 다른 앱 위에 표시 | 권장 | 영상 위 오버레이 |
 | 시스템 설정 변경 | 선택 | 화면을 빨리 끄기 |
-| 기기 관리자 | 선택 | 즉시 잠금 방식 |
 
 ## 3. 테스트 방법
 

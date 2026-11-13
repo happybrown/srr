@@ -1,5 +1,8 @@
 package app.sureureuk.ui
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,9 +30,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.sureureuk.BuildConfig
-import app.sureureuk.update.UpdateInstaller
 import app.sureureuk.update.Updates
 import kotlinx.coroutines.launch
+
+/**
+ * 새 버전은 브라우저에서 릴리스 페이지를 열어 사용자가 직접 받는다.
+ * (앱이 APK를 내려받아 설치하면 Play 프로텍트가 '드로퍼' 앱으로 오인할 수 있어 하지 않는다)
+ */
+private fun openUrl(ctx: Context, url: String) {
+    try {
+        ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    } catch (_: Exception) {
+    }
+}
 
 /** 홈 상단: 새 버전이 있을 때만 보인다. */
 @Composable
@@ -39,13 +52,13 @@ fun UpdateBanner() {
     val r = rel ?: return
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.accentSoft)
-            .clickable(role = Role.Button) { UpdateInstaller.start(ctx, r) }
+            .clickable(role = Role.Button) { openUrl(ctx, r.pageUrl) }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text("새 버전 ${r.version}이 나왔어요", fontSize = 13.sp, color = C.text, modifier = Modifier.weight(1f))
         Spacer(Modifier.width(8.dp))
-        Text("업데이트", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = C.accentText)
+        Text("받으러 가기", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = C.accentText)
     }
 }
 
@@ -71,7 +84,7 @@ fun AppInfoCard() {
         if (Updates.enabled) {
             val r = rel
             if (r != null) {
-                PrimaryButton("${r.version}으로 업데이트") { UpdateInstaller.start(ctx, r) }
+                PrimaryButton("${r.version} 받으러 가기") { openUrl(ctx, r.pageUrl) }
             } else {
                 SecondaryButton(if (checking) "확인 중…" else "업데이트 확인", Modifier.fillMaxWidth(), enabled = !checking, height = 48.dp) {
                     checking = true
@@ -90,7 +103,7 @@ fun AppInfoCard() {
             Text(
                 "변경 내역 보기",
                 fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = C.accent,
-                modifier = Modifier.clickable(role = Role.Button) { UpdateInstaller.openPage(ctx, Updates.releasesPage) }
+                modifier = Modifier.clickable(role = Role.Button) { openUrl(ctx, Updates.releasesPage) }
                     .padding(vertical = 8.dp),
             )
         }

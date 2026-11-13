@@ -32,7 +32,6 @@ fun SettingsScreen(prefs: Prefs, perms: PermState, onBack: () -> Unit, onPerms: 
     var fadeIdx by remember { mutableStateOf(FADE_SECONDS.indexOf(prefs.fadeSeconds).coerceAtLeast(0)) }
     var stop by remember { mutableStateOf(prefs.stopEnabled) }
     var screen by remember { mutableStateOf(prefs.screenEnabled) }
-    var mode by remember { mutableStateOf(prefs.screenMode) }
     var overlay by remember { mutableStateOf(prefs.overlayEnabled) }
     var shake by remember { mutableStateOf(prefs.shakeEnabled) }
 
@@ -69,30 +68,11 @@ fun SettingsScreen(prefs: Prefs, perms: PermState, onBack: () -> Unit, onPerms: 
 
         AppCard {
             StepHeader("3") {
-                ToggleRow("화면 끄기", "밝은 화면이 잠을 깨우지 않도록", screen) { screen = it; prefs.screenEnabled = it }
+                ToggleRow("화면 끄기", "밝은 화면이 잠을 깨우지 않도록 · 지문·얼굴 인식은 그대로", screen) { screen = it; prefs.screenEnabled = it }
             }
-            if (screen) {
-                Column(Modifier.padding(start = 40.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RadioCard(
-                        "자연스럽게 끄기 (권장)",
-                        if (perms.writeSettings) "지문·얼굴 인식을 그대로 쓸 수 있어요"
-                        else "지문·얼굴 인식 유지 · '시스템 설정 변경'을 허용하면 더 빨리 꺼져요",
-                        mode == Prefs.MODE_NATURAL,
-                    ) {
-                        mode = Prefs.MODE_NATURAL
-                        prefs.screenMode = Prefs.MODE_NATURAL
-                        if (!perms.writeSettings) Perms.open(ctx, Perms.writeSettingsIntents(ctx))
-                    }
-                    RadioCard(
-                        "즉시 잠금",
-                        if (perms.admin) "바로 꺼지지만, 다음 잠금 해제 때 PIN 입력이 필요해요"
-                        else "기기 관리자 권한 필요 · 다음 잠금 해제 때 PIN 입력이 필요해요",
-                        mode == Prefs.MODE_LOCK,
-                    ) {
-                        mode = Prefs.MODE_LOCK
-                        prefs.screenMode = Prefs.MODE_LOCK
-                        if (!perms.admin) Perms.open(ctx, Perms.adminIntents(ctx))
-                    }
+            if (screen && !perms.writeSettings) {
+                WarningBanner("'시스템 설정 변경'을 허용하면 10초 안에 꺼져요", "허용") {
+                    Perms.open(ctx, Perms.writeSettingsIntents(ctx))
                 }
             }
         }

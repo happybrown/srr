@@ -3,8 +3,9 @@ name: Release
 # v1.2.3 형식의 태그를 push하면:
 #  1) 태그에서 버전을 읽어 (versionName=1.2.3, versionCode=10203)
 #  2) 업로드 키로 서명한 github APK와 play AAB를 빌드하고
-#  3) GitHub Release를 만들어 결과물을 올린다.
-# 앱(github 배포판)은 이 Release의 '*-github.apk'를 보고 업데이트를 안내한다.
+#  3) GitHub Release를 만들어 사용자용 APK와 RELEASE_NOTES.md만 올린다.
+#     (play AAB와 mapping은 개발자용이라 Actions artifact로만 보관)
+# 앱(github 배포판)은 최신 Release를 보고 새 버전을 안내한다.
 on:
   push:
     tags: ['v*']
@@ -27,6 +28,10 @@ jobs:
             exit 1
           fi
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          if ! head -3 RELEASE_NOTES.md | grep -qF "${TAG#v}"; then
+            echo "::error::RELEASE_NOTES.md 첫 줄에 ${TAG#v} 버전 내용이 없습니다. 릴리스 노트를 먼저 고쳐 주세요."
+            exit 1
+          fi
 
       - name: 서명 키 준비
         env:
@@ -57,17 +62,24 @@ jobs:
       - name: 결과물 정리
         run: |
           V=${{ steps.ver.outputs.version }}
-          mkdir -p out
-          cp app/build/outputs/apk/github/release/app-github-release.apk "out/sureureuk-$V-github.apk"
-          cp app/build/outputs/bundle/playRelease/app-play-release.aab "out/sureureuk-$V-play.aab"
-          (cd app/build/outputs/mapping && zip -qr "$GITHUB_WORKSPACE/out/mapping-$V.zip" .)
-          ls -la out
+          mkdir -p out dev
+          cp app/build/outputs/apk/github/release/app-github-release.apk "out/sureureuk-$V.apk"
+          cp app/build/outputs/bundle/playRelease/app-play-release.aab "dev/sureureuk-$V-play.aab"
+          (cd app/build/outputs/mapping && zip -qr "$GITHUB_WORKSPACE/dev/mapping-$V.zip" .)
+          ls -la out dev
+
+      - name: 개발자용 결과물 보관 (플레이 콘솔 AAB, mapping)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sureureuk-${{ steps.ver.outputs.version }}-dev
+          path: dev/*
+          retention-days: 90
 
       - uses: softprops/action-gh-release@v2
         with:
           name: 스르륵 ${{ steps.ver.outputs.version }}
           files: out/*
-          generate_release_notes: true
+          body_path: RELEASE_NOTES.md
 
       - name: 서명 파일 정리
         if: always()

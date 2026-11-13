@@ -30,11 +30,6 @@ class Prefs(context: Context) {
         get() = sp.getBoolean("screenEnabled", true)
         set(v) = sp.edit().putBoolean("screenEnabled", v).apply()
 
-    /** "natural" = 화면 꺼짐 시간을 잠시 줄여 자연스럽게 끄기, "lock" = 기기 관리자 즉시 잠금 */
-    var screenMode: String
-        get() = sp.getString("screenMode", MODE_NATURAL) ?: MODE_NATURAL
-        set(v) = sp.edit().putString("screenMode", v).apply()
-
     var overlayEnabled: Boolean
         get() = sp.getBoolean("overlayEnabled", true)
         set(v) = sp.edit().putBoolean("overlayEnabled", v).apply()
@@ -84,13 +79,4 @@ class Prefs(context: Context) {
     var updNotes: String?
         get() = sp.getString("updNotes", null)
         set(v) = sp.edit().putString("updNotes", v).apply()
-
-    var updDownloadId: Long
-        get() = sp.getLong("updDownloadId", -1L)
-        set(v) = sp.edit().putLong("updDownloadId", v).apply()
-
-    companion object {
-        const val MODE_NATURAL = "natural"
-        const val MODE_LOCK = "lock"
-    }
 }

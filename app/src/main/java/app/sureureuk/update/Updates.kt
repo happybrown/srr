@@ -24,7 +24,7 @@ object Updates {
 
     private const val TAG = "업데이트"
     private const val INTERVAL_MS = 24 * 60 * 60 * 1000L
-    private const val APK_SUFFIX = "-github.apk"
+    private const val APK_SUFFIX = ".apk"
 
     private val _latest = MutableStateFlow<Release?>(null)
 

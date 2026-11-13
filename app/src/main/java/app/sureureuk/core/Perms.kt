@@ -1,15 +1,12 @@
 package app.sureureuk.core
 
 import android.app.AlarmManager
-import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
-import app.sureureuk.screen.SleepDeviceAdmin
 import app.sureureuk.service.MediaListenerService
 
 data class PermState(
@@ -19,7 +16,6 @@ data class PermState(
     val battery: Boolean,
     val overlay: Boolean,
     val writeSettings: Boolean,
-    val admin: Boolean,
 ) {
     val requiredOk: Boolean get() = notifications && listener && exactAlarm
 }
@@ -28,7 +24,6 @@ object Perms {
     fun read(ctx: Context): PermState {
         val am = ctx.getSystemService(AlarmManager::class.java)
         val pm = ctx.getSystemService(PowerManager::class.java)
-        val dpm = ctx.getSystemService(DevicePolicyManager::class.java)
         return PermState(
             notifications = Notifications.canPost(ctx),
             listener = MediaListenerService.isEnabled(ctx),
@@ -36,7 +31,6 @@ object Perms {
             battery = pm.isIgnoringBatteryOptimizations(ctx.packageName),
             overlay = Settings.canDrawOverlays(ctx),
             writeSettings = Settings.System.canWrite(ctx),
-            admin = dpm.isAdminActive(ComponentName(ctx, SleepDeviceAdmin::class.java)),
         )
     }
 
@@ -59,12 +53,6 @@ object Perms {
     fun overlayIntents(ctx: Context): Array<Intent> = arrayOf(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, pkgUri(ctx)))
 
     fun writeSettingsIntents(ctx: Context): Array<Intent> = arrayOf(Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, pkgUri(ctx)))
-
-    fun adminIntents(ctx: Context): Array<Intent> = arrayOf(
-        Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-            .putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, ComponentName(ctx, SleepDeviceAdmin::class.java))
-            .putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "'즉시 잠금' 방식으로 화면을 끄는 데만 사용해요.")
-    )
 
     fun appDetails(ctx: Context) = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, pkgUri(ctx))
 
