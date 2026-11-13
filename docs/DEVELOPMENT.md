@@ -6,8 +6,10 @@
 |---|---|
 | `service/SleepTimerService.kt` | 타이머 본체 (포그라운드 서비스, 정확한 알람 백업, 마무리 순서) |
 | `media/` | 볼륨 줄이기(`VolumeFader`), 재생 정지(`MediaStopper`), 흔들기 감지 |
-| `screen/ScreenController.kt` | 화면 꺼짐 시간을 잠시 줄였다가 복원 |
-| `overlay/FadeOverlay.kt` | 마지막 구간에 영상 위에 뜨는 막대 |
+| `screen/ScreenController.kt` | 화면 끄기 순서: 바로 잠그기 → 취침 화면 + 꺼짐 시간 단축 |
+| `service/SleepAccessibilityService.kt` | 바로 잠그기 (`GLOBAL_ACTION_LOCK_SCREEN`, github 배포판만 등록) |
+| `overlay/SleepCurtain.kt` | 취침 화면: 불투명 전체 화면 창으로 다른 앱의 `FLAG_KEEP_SCREEN_ON`을 무력화 |
+| `overlay/FadeOverlay.kt` | 소리가 줄어드는 동안 영상 위에 뜨는 막대 |
 | `tile/SleepTileService.kt` | 빠른 설정 타일 |
 | `update/Updates.kt` | GitHub Releases 최신 버전 확인 (github 배포판만) |
 | `ui/` | Compose 화면 (홈, 설정, 권한 안내, 검증) |
@@ -18,8 +20,10 @@
 
 | 배포판 | 배포처 | 인터넷 | 업데이트 |
 |---|---|---|---|
-| `github` | GitHub Releases | 있음 (새 버전 확인 전용) | 앱이 알리고 릴리스 페이지를 열어줌 |
+| `github` | GitHub Releases (개인용) | 있음 (새 버전 확인 전용) | 앱이 알리고 릴리스 페이지를 열어줌 |
 | `play` | 플레이 스토어 | 없음 | 플레이 스토어 |
+
+github 배포판에만 접근성 서비스(바로 잠그기)가 있습니다. 이벤트를 구독하지 않고 화면 내용도 읽지 않지만, 직접 설치한 앱의 접근성 서비스는 Play 프로텍트 경고를 받을 수 있습니다.
 
 Play 프로텍트 차단을 피하려고 다음은 넣지 않습니다.
 
@@ -29,9 +33,12 @@ Play 프로텍트 차단을 피하려고 다음은 넣지 않습니다.
 ## 빌드
 
 ```bash
-./gradlew assembleGithubDebug     # 개발용 APK
-./gradlew lintGithubDebug         # 정적 분석
+./gradlew assembleGithubDebug          # 개발용 APK
+./gradlew lintGithubDebug              # 정적 분석
+./gradlew recordRoborazziGithubDebug   # 화면 렌더링 → app/screenshots/
 ```
+
+화면 테스트(`app/src/test/.../ScreenshotTest.kt`)는 Robolectric + Roborazzi로 기기 없이 화면을 PNG로 그립니다. 360×640, 360×780, 412×915 크기와 글꼴 1.3배에서 겹침이나 잘림이 없는지 확인하는 데 씁니다. README 이미지(`docs/images/`)도 여기서 나옵니다.
 
 ## 배포
 

@@ -4,6 +4,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("io.github.takahirom.roborazzi")
 }
 
 // 서명 정보는 저장소 밖 파일(keystore.properties, .gitignore 처리)에서 읽는다
@@ -32,17 +33,19 @@ android {
         buildConfigField("String", "UPDATE_REPO", "\"happybrown/srr\"")
     }
 
-    // github: GitHub Releases로 배포, 앱 안에서 업데이트 확인·설치 (인터넷 권한 있음)
+    // github: GitHub Releases로 배포(개인용), 새 버전 확인 + 접근성 바로 잠그기
     // play:   플레이 스토어 배포, 인터넷 권한 없음 (스토어 정책상 자체 업데이트 금지)
     flavorDimensions += "store"
     productFlavors {
         create("github") {
             dimension = "store"
             buildConfigField("boolean", "UPDATE_CHECK", "true")
+            buildConfigField("boolean", "A11Y_LOCK", "true")
         }
         create("play") {
             dimension = "store"
             buildConfigField("boolean", "UPDATE_CHECK", "false")
+            buildConfigField("boolean", "A11Y_LOCK", "false")
         }
     }
 
@@ -79,6 +82,13 @@ android {
         compose = true
         buildConfig = true
     }
+
+    // 화면 스크린샷 테스트 (Robolectric + Roborazzi): ./gradlew recordRoborazziGithubDebug
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -89,4 +99,12 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.36.0")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.36.0")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

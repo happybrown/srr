@@ -28,6 +28,7 @@ import app.sureureuk.media.MediaStopper
 import app.sureureuk.media.ShakeDetector
 import app.sureureuk.media.VolumeFader
 import app.sureureuk.overlay.FadeOverlay
+import app.sureureuk.overlay.SleepCurtain
 import app.sureureuk.screen.ScreenController
 import app.sureureuk.tile.SleepTileService
 import app.sureureuk.ui.MainActivity
@@ -95,6 +96,7 @@ class SleepTimerService : Service() {
     private lateinit var fader: VolumeFader
     private lateinit var screen: ScreenController
     private lateinit var overlay: FadeOverlay
+    private lateinit var curtain: SleepCurtain
     private lateinit var shake: ShakeDetector
 
     private var phase = Phase.IDLE
@@ -108,6 +110,7 @@ class SleepTimerService : Service() {
         stopper = MediaStopper(this)
         fader = VolumeFader(this, prefs)
         screen = ScreenController(this, prefs)
+        curtain = SleepCurtain(this)
         overlay = FadeOverlay(this, onExtend = { extend(10, "오버레이") }, onStopNow = { endNow("오버레이") })
         shake = ShakeDetector(this) {
             when (phase) {
@@ -148,6 +151,7 @@ class SleepTimerService : Service() {
     override fun onDestroy() {
         scope.cancel()
         overlay.hide()
+        curtain.hide()
         shake.stop()
         releaseWakeLock()
         if (TimerState.value.phase != Phase.IDLE) TimerState.flow.value = TimerUi()
@@ -264,7 +268,7 @@ class SleepTimerService : Service() {
                 VerifyLog.i(TAG, "15분마다 재생 여부를 보고 볼륨을 복원할게요")
             }
 
-            if (prefs.screenEnabled) screen.turnOff()
+            if (prefs.screenEnabled) screen.turnOff(curtain)
             VerifyLog.i(TAG, "■ 마무리 완료")
         } finally {
             stopper.releaseFocus()
@@ -359,7 +363,7 @@ class SleepTimerService : Service() {
                         delay(3_000)
                         fader.restoreNow("테스트 끝")
                     }
-                    TestKind.SCREEN -> screen.turnOff()
+                    TestKind.SCREEN -> screen.turnOff(curtain)
                     TestKind.OVERLAY -> {
                         val until = System.currentTimeMillis() + 15_000
                         showFadeUi(until)
@@ -395,6 +399,9 @@ class SleepTimerService : Service() {
         SleepTileService.refresh(this)
     }
 
+    // 병합된 매니페스트에는 foregroundServiceType="specialUse"가 선언돼 있다.
+    // github 배포판 매니페스트에 <application>이 따로 있으면 lint가 병합 전 파일만 보고 오탐한다.
+    @SuppressLint("ForegroundServiceType")
     private fun goForeground(): Boolean = try {
         ServiceCompat.startForeground(
             this,
@@ -517,7 +524,7 @@ class SleepTimerService : Service() {
             .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "sureureuk:end")
             .apply {
                 setReferenceCounted(false)
-                acquire(12 * 60_000L)
+                acquire(20 * 60_000L)
             }
     }
 

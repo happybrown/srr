@@ -15,6 +15,19 @@ object Fmt {
         return "%d:%02d".format(s / 60, s % 60)
     }
 
+    /** 남은 시간: 1시간 미만 "23:41", 이상 "1:23:41" */
+    fun remaining(ms: Long): String {
+        val s = (ms + 999) / 1000
+        return if (s >= 3600) "%d:%02d:%02d".format(s / 3600, (s % 3600) / 60, s % 60) else "%d:%02d".format(s / 60, s % 60)
+    }
+
+    /** 45 → "45분", 60 → "1시간", 90 → "1시간 30분" */
+    fun minutesLabel(m: Int): String = when {
+        m < 60 -> "${m}분"
+        m % 60 == 0 -> "${m / 60}시간"
+        else -> "${m / 60}시간 ${m % 60}분"
+    }
+
     fun duration(secs: Int): String = if (secs < 60) "${secs}초" else "${secs / 60}분"
 
     private val names = mapOf(

@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import app.sureureuk.service.MediaListenerService
+import app.sureureuk.service.SleepAccessibilityService
 
 data class PermState(
     val notifications: Boolean,
@@ -16,6 +17,7 @@ data class PermState(
     val battery: Boolean,
     val overlay: Boolean,
     val writeSettings: Boolean,
+    val accessibility: Boolean,
 ) {
     val requiredOk: Boolean get() = notifications && listener && exactAlarm
 }
@@ -31,8 +33,11 @@ object Perms {
             battery = pm.isIgnoringBatteryOptimizations(ctx.packageName),
             overlay = Settings.canDrawOverlays(ctx),
             writeSettings = Settings.System.canWrite(ctx),
+            accessibility = SleepAccessibilityService.isEnabled(ctx),
         )
     }
+
+    fun accessibilityIntents(): Array<Intent> = arrayOf(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
 
     private fun pkgUri(ctx: Context) = Uri.parse("package:${ctx.packageName}")
 

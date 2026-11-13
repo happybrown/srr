@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">스르륵</string>
     <string name="tile_label">슬립 타이머</string>
+    <string name="a11y_label">스르륵 바로 잠그기</string>
+    <string name="a11y_desc">타이머가 끝나면 전원 버튼을 누른 것처럼 화면을 바로 잠가요. 화면 내용은 읽지 않아요.</string>
 </resources>

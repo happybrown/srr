@@ -76,8 +76,8 @@ fun AppInfoCard() {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text("스르륵 ${Updates.currentVersion}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = C.text)
             Text(
-                if (Updates.enabled) "GitHub 배포판 · 새 버전 확인 외에는 인터넷을 쓰지 않아요"
-                else "플레이 스토어판 · 업데이트는 플레이 스토어에서 받아요",
+                (if (Updates.enabled) "GitHub 배포판 · 새 버전 확인 외에는 인터넷을 쓰지 않아요"
+                else "플레이 스토어판 · 업데이트는 플레이 스토어에서 받아요").keepAll(),
                 fontSize = 12.sp, color = C.muted,
             )
         }
@@ -99,7 +99,7 @@ fun AppInfoCard() {
                     }
                 }
             }
-            status?.let { Text(it, fontSize = 13.sp, color = C.muted) }
+            status?.let { Text(it.keepAll(), fontSize = 13.sp, color = C.muted) }
             Text(
                 "변경 내역 보기",
                 fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = C.accent,

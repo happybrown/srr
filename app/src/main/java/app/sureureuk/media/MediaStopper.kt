@@ -55,9 +55,9 @@ class MediaStopper(private val ctx: Context) {
 
     /** 화면용: 지금 재생 중인 앱 이름 */
     fun nowPlayingLabel(): String {
-        if (!hasListenerAccess()) return "알림 접근을 허용하면 보여요"
+        if (!hasListenerAccess()) return "알림 접근 권한이 필요해요"
         val playing = sessions().filter { it.playbackState?.state == PlaybackState.STATE_PLAYING }
-        if (playing.isEmpty()) return if (am.isMusicActive) "알 수 없는 앱에서 재생 중" else "재생 중인 앱 없음"
+        if (playing.isEmpty()) return if (am.isMusicActive) "다른 앱에서 재생 중이에요" else "재생 중인 앱이 없어요"
         val first = Fmt.appName(playing.first().packageName)
         return if (playing.size == 1) first else "$first 외 ${playing.size - 1}개 앱"
     }

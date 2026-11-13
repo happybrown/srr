@@ -63,7 +63,9 @@ private fun AppRoot(tick: Int, onStart: (Int) -> Unit) {
     var localTick by remember { mutableIntStateOf(0) }
     val perms = remember(tick, localTick) { Perms.read(ctx) }
     var screen by rememberSaveable { mutableStateOf(if (prefs.onboarded) Screen.Home else Screen.Permissions) }
-    BackHandler(enabled = screen != Screen.Home) { screen = Screen.Home }
+    BackHandler(enabled = screen != Screen.Home) {
+        screen = if (screen == Screen.Verify) Screen.Settings else Screen.Home
+    }
 
     // GitHub 배포판: 앱을 열 때 하루 한 번 새 버전 확인 (play 배포판에서는 아무것도 하지 않음)
     LaunchedEffect(Unit) {
@@ -77,10 +79,14 @@ private fun AppRoot(tick: Int, onStart: (Int) -> Unit) {
                 Screen.Home -> HomeScreen(
                     prefs, perms, onStart,
                     onSettings = { screen = Screen.Settings },
-                    onVerify = { screen = Screen.Verify },
                     onPerms = { screen = Screen.Permissions },
                 )
-                Screen.Settings -> SettingsScreen(prefs, perms, onBack = { screen = Screen.Home }, onPerms = { screen = Screen.Permissions })
+                Screen.Settings -> SettingsScreen(
+                    prefs, perms,
+                    onBack = { screen = Screen.Home },
+                    onPerms = { screen = Screen.Permissions },
+                    onVerify = { screen = Screen.Verify },
+                )
                 Screen.Permissions -> PermissionsScreen(
                     perms,
                     onRefresh = { localTick++ },
@@ -89,7 +95,7 @@ private fun AppRoot(tick: Int, onStart: (Int) -> Unit) {
                         screen = Screen.Home
                     },
                 )
-                Screen.Verify -> VerifyScreen(prefs, perms, onBack = { screen = Screen.Home })
+                Screen.Verify -> VerifyScreen(prefs, perms, onBack = { screen = Screen.Settings })
             }
         }
     }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 이벤트를 구독하지 않고 화면 내용도 읽지 않는다. 화면 잠금(GLOBAL_ACTION_LOCK_SCREEN)에만 쓴다. -->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault"
+    android:canRetrieveWindowContent="false"
+    android:description="@string/a11y_desc"
+    android:isAccessibilityTool="false"
+    android:notificationTimeout="1000" />
