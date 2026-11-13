@@ -179,4 +179,8 @@ class ScreenshotTest {
     @Test fun full_verify_bigFont() = shoot("full_verify_font130", "w360dp-h1800dp-xxhdpi", 1.3f) {
         VerifyScreen(Prefs(LocalContext.current), noneGranted, onBack = {}, onPerms = {})
     }
+
+    // ---- 알림·영상 위 표시의 예상 모습 (실제 알림은 기기에서만 볼 수 있어 문구·막대를 그대로 옮겨 그림)
+
+    @Test fun mock_notifications() = shoot("mock_notifications", "w360dp-h1060dp-xxhdpi") { NotificationMock() }
 }
