@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">스르륵</string>
+    <string name="tile_label">슬립 타이머</string>
+    <string name="admin_label">스르륵 즉시 잠금</string>
+    <string name="admin_desc">타이머가 끝나면 화면을 즉시 잠그는 데만 사용해요.</string>
+</resources>
