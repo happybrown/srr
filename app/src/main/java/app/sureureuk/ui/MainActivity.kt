@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import app.sureureuk.core.Perms
 import app.sureureuk.core.Prefs
 import app.sureureuk.service.SleepTimerService
+import app.sureureuk.update.Updates
 
 class MainActivity : ComponentActivity() {
     private val resumeTick = mutableIntStateOf(0)
@@ -62,6 +64,12 @@ private fun AppRoot(tick: Int, onStart: (Int) -> Unit) {
     val perms = remember(tick, localTick) { Perms.read(ctx) }
     var screen by rememberSaveable { mutableStateOf(if (prefs.onboarded) Screen.Home else Screen.Permissions) }
     BackHandler(enabled = screen != Screen.Home) { screen = Screen.Home }
+
+    // GitHub 배포판: 앱을 열 때 하루 한 번 새 버전 확인 (play 배포판에서는 아무것도 하지 않음)
+    LaunchedEffect(Unit) {
+        Updates.loadCached(ctx)
+        Updates.check(ctx, force = false)
+    }
 
     Surface(color = C.bg, contentColor = C.text, modifier = Modifier.fillMaxSize()) {
         androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().safeDrawingPadding()) {

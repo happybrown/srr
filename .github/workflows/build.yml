@@ -1,0 +1,29 @@
+name: Build
+
+# main에 push하거나 PR을 올리면 빌드·lint로 깨진 곳이 없는지 확인한다
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 빌드 및 lint
+        run: ./gradlew assembleGithubDebug assemblePlayDebug lintGithubDebug --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sureureuk-debug-apk
+          path: app/build/outputs/apk/github/debug/*.apk
+          retention-days: 7

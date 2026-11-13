@@ -4,12 +4,14 @@
 
 ## 1. 설치
 
+가장 쉬운 방법은 [GitHub Releases](https://github.com/happybrown/srr/releases)에서 `sureureuk-x.y.z-github.apk`를 받아 설치하는 것입니다. 직접 빌드하려면:
+
 ```bash
-./gradlew assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+./gradlew assembleGithubDebug
+adb install -r app/build/outputs/apk/github/debug/app-github-debug.apk
 ```
 
-- 빌드 결과물: `app/build/outputs/apk/debug/app-debug.apk`
+- 직접 빌드한 개발용 APK와 Releases의 APK는 서명 키가 다릅니다. 그래서 하나가 설치된 상태에서 다른 하나를 그 위에 덮어 설치할 수 없습니다. 바꾸려면 먼저 지우고 설치하세요.
 - APK 파일을 메신저 등으로 보내 설치하면 Android 13부터 '알림 접근'이 회색으로 막힙니다. 이때는 **앱 정보 → ⋮ → 제한된 설정 허용**을 먼저 누르세요. `adb install`로 설치하면 이 제한이 없습니다.
 - 실시간 기록 보기: `adb logcat -s Sureureuk`
 
@@ -74,8 +76,8 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ## 6. 기기가 없는 환경에서 확인한 것
 
-- `./gradlew assembleDebug`: 빌드 성공
-- `./gradlew lintDebug`: 오류 0건. 경고는 다음 세 종류뿐입니다.
+- `./gradlew assembleGithubDebug assemblePlayDebug`: 빌드 성공
+- `./gradlew lintGithubDebug`: 오류 0건. 경고는 다음 세 종류뿐입니다.
   - 라이브러리 새 버전 있음
   - `commit()` 사용 (복원용 상태를 즉시 저장하려는 의도적인 선택)
   - mipmap 폴더 이름

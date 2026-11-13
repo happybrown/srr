@@ -63,6 +63,32 @@ class Prefs(context: Context) {
         get() = sp.getInt("savedScreenTimeout", -1)
         set(v) { sp.edit().putInt("savedScreenTimeout", v).commit() }
 
+    // ---- 업데이트 확인 (GitHub 배포판) ----
+
+    var updCheckedAt: Long
+        get() = sp.getLong("updCheckedAt", 0L)
+        set(v) = sp.edit().putLong("updCheckedAt", v).apply()
+
+    var updVersion: String?
+        get() = sp.getString("updVersion", null)
+        set(v) = sp.edit().putString("updVersion", v).apply()
+
+    var updPageUrl: String?
+        get() = sp.getString("updPageUrl", null)
+        set(v) = sp.edit().putString("updPageUrl", v).apply()
+
+    var updApkUrl: String?
+        get() = sp.getString("updApkUrl", null)
+        set(v) = sp.edit().putString("updApkUrl", v).apply()
+
+    var updNotes: String?
+        get() = sp.getString("updNotes", null)
+        set(v) = sp.edit().putString("updNotes", v).apply()
+
+    var updDownloadId: Long
+        get() = sp.getLong("updDownloadId", -1L)
+        set(v) = sp.edit().putLong("updDownloadId", v).apply()
+
     companion object {
         const val MODE_NATURAL = "natural"
         const val MODE_LOCK = "lock"

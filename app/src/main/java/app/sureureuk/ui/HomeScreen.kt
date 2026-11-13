@@ -92,6 +92,7 @@ fun HomeScreen(
             }
         }
         if (!perms.requiredOk) WarningBanner("필수 권한이 꺼져 있어 일부 기능이 동작하지 않아요", "권한 설정", onPerms)
+        if (!ui.active) UpdateBanner()
         if (ui.active) RunningContent(ui, prefs) else SetupContent(prefs, onStart, onSettings)
     }
 }

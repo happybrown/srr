@@ -13,6 +13,12 @@ val keystoreProps = Properties().apply {
 }
 val hasReleaseKey = keystoreProps.getProperty("storeFile") != null
 
+// 버전: CI에서는 태그(v1.2.3)로 -PappVersion=1.2.3을 넘긴다. 로컬 기본값은 gradle.properties.
+val appVersion = (findProperty("appVersion") as String?) ?: "0.0.0"
+val appVersionCode = appVersion.substringBefore('-').split('.').map { it.toIntOrNull() ?: 0 }.let {
+    it.getOrElse(0) { 0 } * 10000 + it.getOrElse(1) { 0 } * 100 + it.getOrElse(2) { 0 }
+}.coerceAtLeast(1)
+
 android {
     namespace = "app.sureureuk"
     compileSdk = 36
@@ -21,8 +27,23 @@ android {
         applicationId = "app.sureureuk"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = appVersionCode
+        versionName = appVersion
+        buildConfigField("String", "UPDATE_REPO", "\"happybrown/srr\"")
+    }
+
+    // github: GitHub Releases로 배포, 앱 안에서 업데이트 확인·설치 (인터넷 권한 있음)
+    // play:   플레이 스토어 배포, 인터넷 권한 없음 (스토어 정책상 자체 업데이트 금지)
+    flavorDimensions += "store"
+    productFlavors {
+        create("github") {
+            dimension = "store"
+            buildConfigField("boolean", "UPDATE_CHECK", "true")
+        }
+        create("play") {
+            dimension = "store"
+            buildConfigField("boolean", "UPDATE_CHECK", "false")
+        }
     }
 
     signingConfigs {
@@ -56,6 +77,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

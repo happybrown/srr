@@ -1,0 +1,74 @@
+name: Release
+
+# v1.2.3 형식의 태그를 push하면:
+#  1) 태그에서 버전을 읽어 (versionName=1.2.3, versionCode=10203)
+#  2) 업로드 키로 서명한 github APK와 play AAB를 빌드하고
+#  3) GitHub Release를 만들어 결과물을 올린다.
+# 앱(github 배포판)은 이 Release의 '*-github.apk'를 보고 업데이트를 안내한다.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 태그에서 버전 읽기
+        id: ver
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::태그는 v1.2.3 형식이어야 합니다 (받은 값: $TAG)"
+            exit 1
+          fi
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: 서명 키 준비
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::error::서명 시크릿이 없습니다. 로컬에서 scripts/upload-signing-secrets.sh 를 먼저 실행하세요."
+            exit 1
+          fi
+          mkdir -p keystore
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore/upload.jks
+          printf 'storeFile=keystore/upload.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+            "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > keystore.properties
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 배포 빌드
+        run: ./gradlew assembleGithubRelease bundlePlayRelease -PappVersion=${{ steps.ver.outputs.version }} --stacktrace
+
+      - name: 결과물 정리
+        run: |
+          V=${{ steps.ver.outputs.version }}
+          mkdir -p out
+          cp app/build/outputs/apk/github/release/app-github-release.apk "out/sureureuk-$V-github.apk"
+          cp app/build/outputs/bundle/playRelease/app-play-release.aab "out/sureureuk-$V-play.aab"
+          (cd app/build/outputs/mapping && zip -qr "$GITHUB_WORKSPACE/out/mapping-$V.zip" .)
+          ls -la out
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: 스르륵 ${{ steps.ver.outputs.version }}
+          files: out/*
+          generate_release_notes: true
+
+      - name: 서명 파일 정리
+        if: always()
+        run: rm -f keystore/upload.jks keystore.properties

@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.sureureuk.core.PermState
 import app.sureureuk.core.Perms
+import app.sureureuk.update.Updates
 
 private class PermItem(val title: String, val tag: String, val desc: String, val done: Boolean, val onGrant: () -> Unit)
 
@@ -101,7 +102,11 @@ fun PermissionsScreen(perms: PermState, onRefresh: () -> Unit, onDone: () -> Uni
             )
         }
 
-        Text("스르륵은 인터넷을 쓰지 않고, 어떤 정보도 모으지 않아요.", fontSize = 13.sp, color = C.mint)
+        Text(
+            if (Updates.enabled) "스르륵은 새 버전 확인 외에는 인터넷을 쓰지 않고, 어떤 정보도 모으지 않아요."
+            else "스르륵은 인터넷을 쓰지 않고, 어떤 정보도 모으지 않아요.",
+            fontSize = 13.sp, color = C.mint,
+        )
         Spacer(Modifier.height(4.dp))
         PrimaryButton(if (perms.requiredOk) "시작하기" else "필수 권한 없이 둘러보기", onClick = onDone)
     }

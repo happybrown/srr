@@ -110,6 +110,8 @@ fun SettingsScreen(prefs: Prefs, perms: PermState, onBack: () -> Unit, onPerms: 
             }
             ToggleRow("흔들어서 연장", "실행 중엔 +5분, 마지막 1분엔 +10분", shake) { shake = it; prefs.shakeEnabled = it }
         }
+
+        AppInfoCard()
     }
 }
 
