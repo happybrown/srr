@@ -250,7 +250,7 @@ private fun SetupScreen(
             )
         },
     ) { dial ->
-        if (!perms.requiredOk) WarningBanner("필수 권한이 꺼져 있어요", "허용하기", onPerms)
+        if (!perms.requiredOk) WarningBanner("필수 권한이 꺼져 있어요", "허용하기", onClick = onPerms)
         UpdateBanner()
 
         Spacer(Modifier.weight(1f))
@@ -578,7 +578,7 @@ private fun RunningScreen(
 
         if (!perms.listener) {
             // 이게 없으면 넷플릭스가 멈추지 않을 수 있다: 바로 고칠 수 있게
-            WarningBanner("알림 접근을 허용해야 영상을 확실히 멈춰요", "허용하기", onPerms)
+            WarningBanner("알림 접근을 허용해야 영상을 확실히 멈춰요", "허용하기", onClick = onPerms)
         } else {
             NowPlaying(playing, musicActive)
         }

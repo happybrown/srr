@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,6 +41,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,17 +67,6 @@ fun TopBar(title: String, onBack: () -> Unit) {
 }
 
 @Composable
-fun PillButton(text: String, onClick: () -> Unit) {
-    Box(
-        Modifier.height(44.dp).clip(RoundedCornerShape(22.dp)).background(C.surface)
-            .clickable(role = Role.Button, onClick = onClick).padding(horizontal = 16.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = C.text)
-    }
-}
-
-@Composable
 fun StatusPill(text: String) {
     Row(
         Modifier.clip(RoundedCornerShape(50)).background(Color(0xFF1F2140)).padding(horizontal = 12.dp, vertical = 6.dp),
@@ -87,14 +78,7 @@ fun StatusPill(text: String) {
     }
 }
 
-@Composable
-fun AppCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(C.surface).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        content = content,
-    )
-}
+private val BUTTON_PADDING = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
 
 @Composable
 private fun ButtonContent(text: String, icon: Int?, fontSize: Int) {
@@ -102,7 +86,10 @@ private fun ButtonContent(text: String, icon: Int?, fontSize: Int) {
         Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(8.dp))
     }
-    Text(text, fontSize = fontSize.sp, fontWeight = if (fontSize >= 17) FontWeight.Bold else FontWeight.SemiBold)
+    Text(
+        text.keepAll(), fontSize = fontSize.sp, textAlign = TextAlign.Center,
+        fontWeight = if (fontSize >= 17) FontWeight.Bold else FontWeight.SemiBold,
+    )
 }
 
 @Composable
@@ -110,8 +97,9 @@ fun PrimaryButton(text: String, modifier: Modifier = Modifier, enabled: Boolean 
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.fillMaxWidth().height(60.dp),
+        modifier = modifier.fillMaxWidth().heightIn(min = 60.dp),
         shape = RoundedCornerShape(20.dp),
+        contentPadding = BUTTON_PADDING,
         colors = ButtonDefaults.buttonColors(
             containerColor = C.accent, contentColor = C.onAccent,
             disabledContainerColor = C.surface2, disabledContentColor = C.muted,
@@ -133,8 +121,9 @@ fun SecondaryButton(
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.height(height),
+        modifier = modifier.heightIn(min = height),
         shape = RoundedCornerShape(18.dp),
+        contentPadding = BUTTON_PADDING,
         colors = ButtonDefaults.buttonColors(
             containerColor = C.surface2, contentColor = C.text,
             disabledContainerColor = C.surface, disabledContentColor = C.muted,
@@ -148,8 +137,9 @@ fun SecondaryButton(
 fun GhostButton(text: String, modifier: Modifier = Modifier, icon: Int? = null, onClick: () -> Unit) {
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier.height(52.dp),
+        modifier = modifier.heightIn(min = 52.dp),
         shape = RoundedCornerShape(18.dp),
+        contentPadding = BUTTON_PADDING,
         border = BorderStroke(1.dp, C.line),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = C.text),
     ) {
@@ -161,34 +151,13 @@ fun GhostButton(text: String, modifier: Modifier = Modifier, icon: Int? = null, 
 fun SmallOutlineButton(text: String, description: String? = null, onClick: () -> Unit) {
     OutlinedButton(
         onClick = onClick,
-        modifier = Modifier.height(48.dp).semantics { if (description != null) contentDescription = description },
-        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.heightIn(min = 48.dp).semantics { if (description != null) contentDescription = description },
+        shape = RoundedCornerShape(14.dp),
+        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
         border = BorderStroke(1.dp, C.accent),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = C.accentText),
     ) {
         Text(text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-    }
-}
-
-@Composable
-fun ToggleRow(title: String, desc: String?, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().toggleable(value = checked, role = Role.Switch, onValueChange = onChange).padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(title.keepAll(), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = C.text)
-            if (desc != null) Text(desc.keepAll(), fontSize = 13.sp, lineHeight = 18.sp, color = C.muted)
-        }
-        Spacer(Modifier.width(12.dp))
-        Switch(
-            checked = checked,
-            onCheckedChange = null,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = C.onAccent, checkedTrackColor = C.accent, checkedBorderColor = C.accent,
-                uncheckedThumbColor = C.muted, uncheckedTrackColor = C.line, uncheckedBorderColor = C.line,
-            ),
-        )
     }
 }
 
@@ -201,82 +170,38 @@ fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
         options.forEachIndexed { i, label ->
             val on = i == selected
             Box(
-                Modifier.weight(1f).height(44.dp).clip(RoundedCornerShape(12.dp))
+                Modifier.weight(1f).heightIn(min = 44.dp).clip(RoundedCornerShape(12.dp))
                     .background(if (on) C.accentSoft else Color.Transparent)
-                    .selectable(selected = on, role = Role.RadioButton) { onSelect(i) },
+                    .selectable(selected = on, role = Role.RadioButton) { onSelect(i) }
+                    .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(label, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = if (on) C.text else C.muted)
+                Text(label, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = if (on) C.text else C.muted, maxLines = 1)
             }
         }
     }
 }
 
 @Composable
-fun RadioCard(title: String, desc: String, selected: Boolean, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.bg)
-            .border(1.5.dp, if (selected) C.accent else C.line, RoundedCornerShape(14.dp))
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Box(
-            Modifier.size(20.dp).border(2.dp, if (selected) C.accent else C.line, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (selected) Box(Modifier.size(10.dp).clip(CircleShape).background(C.accent))
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(title.keepAll(), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = C.text)
-            Text(desc.keepAll(), fontSize = 12.sp, color = C.muted)
-        }
-    }
-}
-
-@Composable
-fun NumberBadge(n: String, done: Boolean = false) {
-    Box(
-        Modifier.size(28.dp).clip(CircleShape).background(if (done) C.mintSoft else C.accentSoft),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(n, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = if (done) C.mint else C.accentText)
-    }
-}
-
-@Composable
-fun RoundIconButton(symbol: String, description: String, onClick: () -> Unit) {
-    Box(
-        Modifier.size(48.dp).clip(CircleShape).background(C.surface).border(1.dp, C.line, CircleShape)
-            .clickable(role = Role.Button, onClick = onClick)
-            .semantics { contentDescription = description },
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(symbol, fontSize = 22.sp, fontWeight = FontWeight.Medium, color = C.text)
-    }
-}
-
-@Composable
-fun WarningBanner(text: String, action: String, onClick: () -> Unit) {
-    NoticeBanner(text, action, C.warnSoft, C.warn, C.warn, onClick)
+fun WarningBanner(text: String, action: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    NoticeBanner(text, action, C.warnSoft, C.warn, C.warn, modifier, onClick)
 }
 
 /** 꼭 필요하진 않은 권한 안내: 경고보다 차분한 색 */
 @Composable
-fun TipBanner(text: String, action: String, onClick: () -> Unit) {
-    NoticeBanner(text, action, C.surface2, C.muted, C.accentText, onClick)
+fun TipBanner(text: String, action: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    NoticeBanner(text, action, C.surface2, C.muted, C.accentText, modifier, onClick)
 }
 
 @Composable
-private fun NoticeBanner(text: String, action: String, bg: Color, fg: Color, actionColor: Color, onClick: () -> Unit) {
+private fun NoticeBanner(text: String, action: String, bg: Color, fg: Color, actionColor: Color, modifier: Modifier, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().heightIn(min = 48.dp).clip(RoundedCornerShape(16.dp)).background(bg)
+        modifier.fillMaxWidth().heightIn(min = 48.dp).clip(RoundedCornerShape(14.dp)).background(bg)
             .clickable(role = Role.Button, onClickLabel = action, onClick = onClick).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text.keepAll(), fontSize = 13.sp, color = fg, modifier = Modifier.weight(1f))
-        Spacer(Modifier.width(8.dp))
-        Text(action, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = actionColor)
+        Text(text.keepAll(), fontSize = 14.sp, color = fg, modifier = Modifier.weight(1f))
+        Spacer(Modifier.width(12.dp))
+        Text(action, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = actionColor, maxLines = 1, softWrap = false)
     }
 }

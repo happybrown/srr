@@ -110,30 +110,22 @@ fun PermissionsScreen(perms: PermState, onRefresh: () -> Unit, onDone: () -> Uni
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                required.forEach { PermRow(it) }
-            }
+            PermGroup(required)
 
             Text(
                 "더 잘 되게 하려면 (선택)",
                 fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = C.muted,
                 modifier = Modifier.padding(top = 8.dp).semantics { heading() },
             )
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                optional.forEach { PermRow(it) }
-            }
+            PermGroup(optional)
 
-            Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface)
-                    .clickable(role = Role.Button) { Perms.open(ctx, arrayOf(Perms.appDetails(ctx))) }
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text("'알림 접근'이나 '접근성'이 회색으로 막혀 있다면".keepAll(), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = C.text)
-                Text(
-                    "파일로 받아 설치한 앱은 Android 13부터 제한돼요. 여기를 눌러 앱 정보 → 오른쪽 위 ⋮ → '제한된 설정 허용'을 먼저 눌러 주세요.".keepAll(),
-                    fontSize = 13.sp, color = C.muted,
-                )
+            GroupCard {
+                ListRow(
+                    R.drawable.ic_info, "'허용'이 회색으로 막혀 있나요?",
+                    "앱 정보 → 오른쪽 위 ⋮ → '제한된 설정 허용'을 먼저 눌러 주세요",
+                    tint = C.muted,
+                    onClick = { Perms.open(ctx, arrayOf(Perms.appDetails(ctx))) },
+                ) { Chevron() }
             }
 
             Text(
@@ -164,23 +156,26 @@ fun PermissionsScreen(perms: PermState, onRefresh: () -> Unit, onDone: () -> Uni
     }
 }
 
+/** 권한 묶음: 행 전체를 누르면 허용 화면으로. 허용한 항목은 초록 체크. */
 @Composable
-private fun PermRow(item: PermItem) {
-    Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface)
-            .padding(start = 16.dp, end = 12.dp, top = 14.dp, bottom = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        IconBadge(item.icon, tint = if (item.done) C.mint else C.accent, done = item.done)
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(item.title.keepAll(), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = C.text)
-            Text(item.desc.keepAll(), fontSize = 13.sp, color = C.muted)
-        }
-        if (item.done) {
-            Text("완료", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = C.mint, modifier = Modifier.padding(horizontal = 8.dp))
-        } else {
-            SmallOutlineButton("허용하기", description = "${item.title} 허용하기", onClick = item.onGrant)
+private fun PermGroup(items: List<PermItem>) {
+    GroupCard {
+        items.forEachIndexed { i, item ->
+            if (i > 0) RowDivider()
+            ListRow(
+                item.icon, item.title, item.desc,
+                tint = if (item.done) C.mint else C.accent,
+                onClick = if (item.done) null else item.onGrant,
+            ) {
+                if (item.done) {
+                    Icon(painterResource(R.drawable.ic_check), contentDescription = "허용됨", tint = C.mint, modifier = Modifier.size(20.dp))
+                } else {
+                    Text(
+                        "허용", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = C.accentText, maxLines = 1, softWrap = false,
+                        modifier = Modifier.clip(RoundedCornerShape(50)).background(C.accentSoft).padding(horizontal = 12.dp, vertical = 6.dp),
+                    )
+                }
+            }
         }
     }
 }

@@ -95,7 +95,7 @@ private fun AppRoot(tick: Int, onStart: (Int) -> Unit) {
                         screen = Screen.Home
                     },
                 )
-                Screen.Verify -> VerifyScreen(prefs, perms, onBack = { screen = Screen.Settings })
+                Screen.Verify -> VerifyScreen(prefs, perms, onBack = { screen = Screen.Settings }, onPerms = { screen = Screen.Permissions })
             }
         }
     }

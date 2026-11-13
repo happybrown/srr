@@ -42,30 +42,25 @@ class FadeOverlay(
         val bar = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(px(16), px(6), px(6), px(6))
+            setPadding(px(14), px(6), px(6), px(6))
+            contentDescription = "소리를 줄이는 중"
             background = GradientDrawable().apply {
                 setColor(0xF2141628.toInt())
                 cornerRadius = px(28).toFloat()
                 setStroke(px(1), 0xFF2A2F4D.toInt())
             }
         }
-        val title = TextView(ctx).apply {
-            text = "소리를 줄이는 중"
-            setTextColor(0xFFD5D8EA.toInt())
-            textSize = 14f
-            typeface = Typeface.DEFAULT_BOLD
-        }
         val secs = TextView(ctx).apply {
             setTextColor(0xFFD5D8EA.toInt())
             textSize = 15f
             typeface = Typeface.DEFAULT_BOLD
-            setPadding(px(10), 0, px(6), 0)
+            setPadding(0, 0, px(6), 0)
+            maxLines = 1
         }
         val ring = RingView(ctx).apply {
             layoutParams = LinearLayout.LayoutParams(px(22), px(22)).apply { marginEnd = px(10) }
         }
         bar.addView(ring)
-        bar.addView(title)
         bar.addView(secs)
         bar.addView(pill("+10분", filled = true) { onExtend() })
         bar.addView(pill("끄기", filled = false) { onStopNow() })

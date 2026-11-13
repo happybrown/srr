@@ -141,4 +141,42 @@ class ScreenshotTest {
     @Test fun permissions_partly() = shoot("permissions_360x780_partly", "w360dp-h780dp-xxhdpi") {
         PermissionsScreen(noneGranted.copy(notifications = true, battery = true), onRefresh = {}, onDone = {})
     }
+
+    // ---- 전체 길이 (스크롤 아래쪽까지 한 장에)
+
+    @Test fun full_settings() = shoot("full_settings", "w360dp-h1900dp-xxhdpi") {
+        SettingsScreen(Prefs(LocalContext.current), noneGranted, onBack = {}, onPerms = {}, onVerify = {})
+    }
+
+    @Test fun full_settings_bigFont() = shoot("full_settings_font130", "w360dp-h2300dp-xxhdpi", 1.3f) {
+        SettingsScreen(Prefs(LocalContext.current), allGranted, onBack = {}, onPerms = {}, onVerify = {})
+    }
+
+    @Test fun full_permissions() = shoot("full_permissions_font130", "w360dp-h2300dp-xxhdpi", 1.3f) {
+        PermissionsScreen(noneGranted.copy(notifications = true), onRefresh = {}, onDone = {})
+    }
+
+    @Test fun full_verify() = shoot("full_verify", "w360dp-h1500dp-xxhdpi") {
+        VerifyScreen(Prefs(LocalContext.current), allGranted, onBack = {}, onPerms = {})
+    }
+
+    @Test fun full_verify_log() {
+        app.sureureuk.core.VerifyLog.clear()
+        listOf(
+            "검증" to "▶ [정지: 미디어 세션] 10초 뒤 실행 · 지금 테스트할 앱으로 가서 재생하세요",
+            "정지" to "미디어 세션 pause() 실행 (대상 1개)",
+            "정지" to "✓ 정지됨 · 넷플릭스:일시정지",
+            "화면" to "취침 화면 표시 (밝기 최저)",
+            "화면" to "✗ 70초 동안 화면이 꺼지지 않음",
+            "검증" to "■ [화면 끄기] 끝",
+        ).forEach { (t, m) -> app.sureureuk.core.VerifyLog.i(t, m) }
+        shoot("full_verify_log", "w360dp-h1500dp-xxhdpi") {
+            VerifyScreen(Prefs(LocalContext.current), allGranted, onBack = {}, onPerms = {})
+        }
+        app.sureureuk.core.VerifyLog.clear()
+    }
+
+    @Test fun full_verify_bigFont() = shoot("full_verify_font130", "w360dp-h1800dp-xxhdpi", 1.3f) {
+        VerifyScreen(Prefs(LocalContext.current), noneGranted, onBack = {}, onPerms = {})
+    }
 }

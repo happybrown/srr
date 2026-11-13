@@ -5,14 +5,15 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -25,11 +26,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.sureureuk.BuildConfig
+import app.sureureuk.R
 import app.sureureuk.update.Updates
 import kotlinx.coroutines.launch
 
@@ -51,46 +53,42 @@ fun UpdateBanner() {
     val rel by Updates.latest.collectAsState()
     val r = rel ?: return
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.accentSoft)
+        Modifier.fillMaxWidth().heightIn(min = 48.dp).clip(RoundedCornerShape(14.dp)).background(C.accentSoft)
             .clickable(role = Role.Button) { openUrl(ctx, r.pageUrl) }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("새 버전 ${r.version}이 나왔어요", fontSize = 13.sp, color = C.text, modifier = Modifier.weight(1f))
-        Spacer(Modifier.width(8.dp))
-        Text("받으러 가기", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = C.accentText)
+        Icon(painterResource(R.drawable.ic_download), contentDescription = null, tint = C.accentText, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(10.dp))
+        Text("새 버전 ${r.version}".keepAll(), fontSize = 14.sp, color = C.text, modifier = Modifier.weight(1f))
+        Spacer(Modifier.width(12.dp))
+        Text("받기", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = C.accentText, maxLines = 1, softWrap = false)
     }
 }
 
-/** 설정 하단: 버전 정보와 수동 업데이트 확인 */
+/** 설정 '앱' 묶음에 이어 붙는 행: 업데이트 확인, 변경 내역 (github 배포판만) */
 @Composable
-fun AppInfoCard() {
+fun UpdateRows() {
+    if (!Updates.enabled) return
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val rel by Updates.latest.collectAsState()
     var status by remember { mutableStateOf<String?>(null) }
     var checking by remember { mutableStateOf(false) }
 
-    AppCard {
-        Text("앱 정보", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = C.muted)
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text("스르륵 ${Updates.currentVersion}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = C.text)
-            Text(
-                (if (Updates.enabled) "GitHub 배포판 · 새 버전 확인 외에는 인터넷을 쓰지 않아요"
-                else "플레이 스토어판 · 업데이트는 플레이 스토어에서 받아요").keepAll(),
-                fontSize = 12.sp, color = C.muted,
-            )
-        }
-        if (Updates.enabled) {
-            val r = rel
-            if (r != null) {
-                PrimaryButton("${r.version} 받으러 가기") { openUrl(ctx, r.pageUrl) }
-            } else {
-                SecondaryButton(if (checking) "확인 중…" else "업데이트 확인", Modifier.fillMaxWidth(), enabled = !checking, height = 48.dp) {
+    RowDivider()
+    val r = rel
+    if (r != null) {
+        ListRow(R.drawable.ic_download, "새 버전 ${r.version}", "눌러서 받으러 가요", tint = C.amber, onClick = { openUrl(ctx, r.pageUrl) }) { Chevron() }
+    } else {
+        ListRow(
+            R.drawable.ic_download, "업데이트 확인",
+            if (checking) "확인하는 중이에요" else status ?: "지금 ${Updates.currentVersion} 버전을 쓰고 있어요",
+            onClick = {
+                if (!checking) {
                     checking = true
                     scope.launch {
                         status = when (Updates.check(ctx, force = true)) {
-                            Updates.Result.UPDATE -> null
                             Updates.Result.LATEST -> "최신 버전이에요"
                             Updates.Result.FAILED -> "확인하지 못했어요. 인터넷 연결을 확인해 주세요"
                             else -> null
@@ -98,15 +96,9 @@ fun AppInfoCard() {
                         checking = false
                     }
                 }
-            }
-            status?.let { Text(it.keepAll(), fontSize = 13.sp, color = C.muted) }
-            Text(
-                "변경 내역 보기",
-                fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = C.accent,
-                modifier = Modifier.clickable(role = Role.Button) { openUrl(ctx, Updates.releasesPage) }
-                    .padding(vertical = 8.dp),
-            )
-        }
-        if (BuildConfig.DEBUG) Text("개발용 빌드 (${BuildConfig.FLAVOR})", fontSize = 12.sp, color = C.muted)
+            },
+        )
     }
+    RowDivider()
+    ListRow(R.drawable.ic_doc, "변경 내역", onClick = { openUrl(ctx, Updates.releasesPage) }) { Chevron() }
 }
