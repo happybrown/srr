@@ -68,7 +68,7 @@ class FadeOverlay(
         bar.addView(title)
         bar.addView(secs)
         bar.addView(pill("+10분", filled = true) { onExtend() })
-        bar.addView(pill("지금 끄기", filled = false) { onStopNow() })
+        bar.addView(pill("끄기", filled = false) { onStopNow() })
 
         val lp = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,

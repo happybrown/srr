@@ -447,7 +447,7 @@ class SleepTimerService : Service() {
         when (phase) {
             Phase.RUNNING, Phase.FADING -> b
                 .setContentTitle("${Fmt.clock(endAt)}에 잠들어요")
-                .setContentText(if (phase == Phase.FADING) "소리를 서서히 줄이는 중" else "끝나면 소리 줄이기 → 재생 멈추기 → 화면 끄기")
+                .setContentText(if (phase == Phase.FADING) "소리를 줄이는 중" else "끝나면 소리를 줄이고 화면을 꺼요")
                 .setUsesChronometer(true)
                 .setChronometerCountDown(true)
                 .setWhen(endAt)
@@ -457,7 +457,7 @@ class SleepTimerService : Service() {
                 .addAction(0, "+15분", svcPi(11, ACTION_EXTEND, 15))
                 .addAction(0, "끄기", svcPi(12, ACTION_CANCEL))
             Phase.TESTING -> b.setContentTitle("검증 테스트").setContentText(testLabel ?: "")
-            Phase.ENDING -> b.setContentTitle("잘 자요").setContentText("재생을 멈추고 화면을 끄는 중")
+            Phase.ENDING -> b.setContentTitle("잘 자요").setContentText("재생을 멈추는 중")
             Phase.IDLE -> b.setContentTitle("스르륵").setContentText("준비 중")
         }
         return b.build()
@@ -488,7 +488,7 @@ class SleepTimerService : Service() {
             .setSmallIcon(R.drawable.ic_moon)
             .setColor(Notifications.ACCENT)
             .setContentTitle("곧 잠들어요")
-            .setContentText("소리를 서서히 줄이고 있어요. 깨어 있다면 +10분")
+            .setContentText("소리를 줄이는 중이에요")
             .setUsesChronometer(true)
             .setChronometerCountDown(true)
             .setWhen(until)
@@ -498,7 +498,7 @@ class SleepTimerService : Service() {
             .setOnlyAlertOnce(true)
             .setAutoCancel(true)
             .addAction(0, "+10분", svcPi(13, ACTION_EXTEND, 10))
-            .addAction(0, "지금 끄기", svcPi(14, ACTION_END_NOW))
+            .addAction(0, "끄기", svcPi(14, ACTION_END_NOW))
             .build()
         NotificationManagerCompat.from(this).notify(Notifications.ID_FADE, n)
     }
